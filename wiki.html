@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alynx - A Enciclopédia do Aventureiro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        alynx: {
+                            dark: '#0B0F19',    // Fundo principal mais profundo
+                            darker: '#05070A',  // Fundo sidebar
+                            gold: '#D4AF37',    // Dourado envelhecido (Premium)
+                            goldhover: '#F1C40F',
+                            purple: '#7D3C98',  // Roxo arcano
+                            crimson: '#900C3F', // Vermelho sangue
+                            text: '#D0D3D4',    // Texto leitura
+                            panel: '#151C2C'    // Fundo de cards
+                        }
+                    },
+                    fontFamily: {
+                        rpg: ['Cinzel', 'serif'],
+                        body: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0B0F19;
+            color: #D0D3D4;
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+            line-height: 1.8;
+        }
+        h1, h2, h3, h4, .font-rpg { font-family: 'Cinzel', serif; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #05070A; }
+        ::-webkit-scrollbar-thumb { background: #2C3E50; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
+        
+        /* Efeitos Premium */
+        .glass-panel {
+            background: linear-gradient(145deg, rgba(21, 28, 44, 0.9), rgba(11, 15, 25, 0.95));
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        }
+        .text-glow { text-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
+        .text-glow-red { text-shadow: 0 0 15px rgba(144, 12, 63, 0.6); }
+        .text-glow-purple { text-shadow: 0 0 15px rgba(125, 60, 152, 0.6); }
+        
+        .nav-link.active {
+            color: #D4AF37;
+            border-left-color: #D4AF37;
+            background: linear-gradient(90deg, rgba(212, 175, 55, 0.1) 0%, transparent 100%);
+        }
+        code {
+            background-color: #05070A;
+            color: #A569BD;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.3rem;
+            font-family: monospace;
+            border: 1px solid rgba(165, 105, 189, 0.2);
+            font-size: 0.9em;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: -33px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #D4AF37;
+            border: 4px solid #0B0F19;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        }
+        
+        /* Sub-section headings */
+        .sub-heading {
+            display: flex;
+            align-items: center;
+            margin-top: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: #D4AF37;
+        }
+        .sub-heading::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(212, 175, 55, 0.5) 0%, transparent 100%);
+            margin-left: 1.5rem;
+        }
+        
+        .feature-list li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .feature-list li::before {
+            content: '✦';
+            position: absolute;
+            left: 0;
+            color: #D4AF37;
+        }
+    </style>
+</head>
+<body class="flex flex-col md:flex-row min-h-screen">
+
+    <!-- Mobile Header -->
+    <header class="md:hidden bg-alynx-darker border-b border-gray-800 p-4 flex justify-between items-center sticky top-0 z-50">
+        <h1 class="text-alynx-gold font-rpg text-xl font-bold">Alynx Wiki</h1>
+        <button id="mobile-menu-btn" class="text-gray-300 hover:text-white transition-colors">
+            <i class="fas fa-bars text-2xl"></i>
+        </button>
+    </header>
+
+    <!-- Sidebar / Sumário -->
+    <nav id="sidebar" class="hidden md:flex flex-col w-full md:w-80 bg-alynx-darker h-screen sticky top-0 border-r border-gray-900 overflow-y-auto shrink-0 transition-all duration-300 z-40 shadow-2xl">
+        <div class="p-6">
+            <div class="text-center mb-8 border-b border-gray-800 pb-6">
+                <i class="fas fa-dragon text-6xl text-alynx-gold mb-4 text-glow"></i>
+                <h1 class="text-2xl font-rpg font-bold text-alynx-gold uppercase tracking-widest mt-2">Alynx</h1>
+                <p class="text-xs text-gray-400 mt-1 uppercase tracking-[0.3em]">World of Minecraft</p>
+            </div>
+            
+            <p class="text-xs font-bold text-gray-600 uppercase tracking-widest mb-4 px-2">Sumário dos Tomos</p>
+            <ul class="space-y-1 flex flex-col" id="nav-menu">
+                <li><a href="#prologo" class="nav-link block py-3 px-4 border-l-2 border-transparent text-gray-400 hover:text-alynx-gold transition-colors text-sm font-medium"><i class="fas fa-scroll w-7 text-center"></i> 1. O Prólogo (Spawn)</a></li>
+                <li><a href="#trilha-heroi" class="nav-link block py-3 px-4 border-l-2 border-transparent text-gray-400 hover:text-alynx-gold transition-colors text-sm font-medium"><i class="fas fa-compass w-7 text-center"></i> 2. A Trilha do Herói</a></li>
+                <li><a href="#personagem" class="nav-link block py-3 px-4 border-l-2 border-transparent text-gray-400 hover:text-alynx-gold transition-colors text-sm font-medium"><i class="fas fa-user-shield w-7 text-center"></i> 3. Personagem e Magia</a></li>
+                <li><a href="#profissoes" class="nav-link block py-3 px-4 border-l-2 border-transparent text-gray-400 hover:text-alynx-gold transition-colors text-sm font-medium"><i class="fas fa-hammer w-7 text-center"></i> 4. Vida no Survival</a></li>
+                <li><a href="#territorios" class="nav-link block py-3 px-4 border-l-2 border-transparent text-gray-400 hover:text-alynx-gold transition-colors text-sm font-medium"><i class="fas fa-chess-rook w-7 text-center"></i> 5. Territórios e Nações</a></li>
+                <li><a href="#mundo-aventura" class="nav-link block py-3 px-4 border-l-2 border-transparent text-gray-400 hover:text-alynx-gold transition-colors text-sm font-medium"><i class="fas fa-dungeon w-7 text-center"></i> 6. O Mundo de Aventura</a></li>
+                <li><a href="#economia" class="nav-link block py-3 px-4 border-l-2 border-transparent text-gray-400 hover:text-alynx-gold transition-colors text-sm font-medium"><i class="fas fa-coins w-7 text-center text-yellow-500"></i> 7. Economia e Drakmas</a></li>
+                <li><a href="#pvp" class="nav-link block py-3 px-4 border-l-2 border-transparent text-gray-400 hover:text-alynx-gold transition-colors text-sm font-medium"><i class="fas fa-skull w-7 text-center text-alynx-crimson"></i> 8. PvP Aberto e PKs</a></li>
+            </ul>
+            
+            <div class="mt-10 p-4 bg-alynx-panel rounded-lg border border-gray-800 text-center">
+                <p class="text-xs text-gray-400 mb-2">Jogue agora em Crossplay!</p>
+                <p class="text-sm font-bold text-alynx-gold">jogar.alynx.com</p>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Conteúdo Principal -->
+    <main class="flex-1 p-6 md:p-12 lg:p-24 overflow-y-auto w-full max-w-5xl mx-auto">
+        
+        <!-- INTRO -->
+        <div class="text-center mb-20">
+            <h1 class="text-5xl md:text-7xl text-alynx-gold font-bold font-rpg mb-6 text-glow tracking-wide">A Enciclopédia Definitiva</h1>
+            <p class="text-gray-400 text-xl max-w-3xl mx-auto leading-relaxed">
+                Bem-vindo ao guia absoluto para forjar o seu destino em Alynx. Um universo onde a sobrevivência clássica se funde com um ecossistema denso de RPG. Leia com atenção, pois a ignorância aqui é tão mortal quanto a lâmina de um Assassino.
+            </p>
+        </div>
+
+        <!-- Seção 1: Prólogo -->
+        <section id="prologo" class="mb-32 pt-8">
+            <h2 class="text-4xl text-alynx-gold font-bold mb-8 font-rpg border-b border-gray-800 pb-4"><i class="fas fa-torii-gate mr-4"></i> 1. O Prólogo: O Berço Seguro (Spawn)</h2>
+            <p class="mb-6 text-lg text-gray-300">
+                Ao abrir os olhos pela primeira vez, você pisará no solo sagrado do <strong>Spawn</strong>. Este é o coração pacífico do servidor, uma metrópole santuário onde a morte não existe, monstros não nascem e a fome não assola. Graças à nossa avançada magia de Crossplay, você verá guerreiros de PC (Java), celular e consoles (Bedrock) caminhando juntos pelas mesmas ruas.
+            </p>
+            
+            <div class="glass-panel p-8 rounded-2xl mb-8 border-l-4 border-l-alynx-gold">
+                <h3 class="text-2xl text-white font-rpg font-bold mb-4">O Seu Artefato Mais Importante: O Menu Principal</h3>
+                <p class="text-base text-gray-300 mb-4">
+                    Olhe para o seu inventário. Você notará um item mágico indestrutível (uma estrela, livro ou bússola). Este é o seu elo com o sistema do mundo. <strong>Segure-o na mão e clique com o botão direito</strong> (ou simplesmente digite <code>/menu</code> no chat).
+                </p>
+                <p class="text-base text-gray-300">
+                    O Menu é o seu painel de controle divino. Esqueça ter que decorar dezenas de comandos complexos. Através desta interface visual, você poderá acessar o painel de Atributos, a Árvore de Magias, escolher sua Classe, visualizar suas Profissões, visitar o Mercado e acionar teleportes instantâneos para as áreas de caça. <em>Dica de Ouro: Se estiver perdido em qualquer momento do jogo, abra o Menu!</em>
+                </p>
+            </div>
+
+            <h3 class="text-2xl text-white font-rpg font-bold mb-6 mt-12">Os Habitantes da Cidade (NPCs)</h3>
+            <p class="mb-6 text-gray-300">
+                O Spawn não é apenas um lugar bonito; ele é habitado por figuras vitais para o seu avanço. Explore a cidade e clique nos personagens com nomes flutuantes para interagir:
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-alynx-panel p-6 rounded-xl border border-gray-800 hover:border-gray-600 transition-colors">
+                    <i class="fas fa-graduation-cap text-3xl text-blue-400 mb-3"></i>
+                    <h4 class="text-lg font-bold text-white mb-2">O Sábio (Tutorial)</h4>
+                    <p class="text-sm text-gray-400">O primeiro NPC que você deve buscar. Ele lhe dará as missões iniciais, explicará as regras do servidor e lhe entregará algumas rações de viagem para sua primeira expedição.</p>
+                </div>
+                <div class="bg-alynx-panel p-6 rounded-xl border border-gray-800 hover:border-gray-600 transition-colors">
+                    <i class="fas fa-building-columns text-3xl text-yellow-500 mb-3"></i>
+                    <h4 class="text-lg font-bold text-white mb-2">O Banqueiro de Drakmas</h4>
+                    <p class="text-sm text-gray-400">O mestre da economia. Fica no edifício central. É ele quem gerencia a injeção do dinheiro no servidor e troca seus minérios pesados por moedas sonantes.</p>
+                </div>
+                <div class="bg-alynx-panel p-6 rounded-xl border border-gray-800 hover:border-gray-600 transition-colors">
+                    <i class="fas fa-map-location-dot text-3xl text-green-500 mb-3"></i>
+                    <h4 class="text-lg font-bold text-white mb-2">O Guarda dos Mundos</h4>
+                    <p class="text-sm text-gray-400">Sua passagem para fora da zona segura. Ele pode te teletransportar para o imenso Mundo Survival (foco em mineração e construção) ou para o brutal Mundo de Aventura (foco em combate extremo).</p>
+                </div>
+                <div class="bg-alynx-panel p-6 rounded-xl border border-gray-800 hover:border-gray-600 transition-colors">
+                    <i class="fas fa-gift text-3xl text-purple-400 mb-3"></i>
+                    <h4 class="text-lg font-bold text-white mb-2">Mestre das Recompensas</h4>
+                    <p class="text-sm text-gray-400">A lealdade é recompensada. Fale com ele todos os dias ao entrar no servidor para girar roletas e recolher bônus diários (dinheiro, cosméticos e itens mágicos básicos).</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção 2: A Trilha do Herói (Progression Timeline) -->
+        <section id="trilha-heroi" class="mb-32 pt-8">
+            <h2 class="text-4xl text-alynx-gold font-bold mb-10 font-rpg border-b border-gray-800 pb-4"><i class="fas fa-compass mr-4"></i> 2. A Bússola do Destino (Guia de Progressão)</h2>
+            <p class="mb-10 text-lg text-gray-300">
+                Entrar em um mundo tão vasto pode ser opressor. Muitos jogadores tentam pular etapas e acabam mortos ou falidos. Se você deseja ir de um simples camponês ao Rei de um Império, siga com rigor os 4 pilares da Trilha do Herói:
+            </p>
+
+            <div class="relative border-l-4 border-gray-800 ml-6 pl-10 space-y-16">
+                <!-- Fase 1 -->
+                <div class="relative">
+                    <div class="timeline-dot top-1"></div>
+                    <h3 class="text-2xl text-white font-bold font-rpg mb-3">Fase 1: As Raízes da Sobrevivência (Nível 1 a 10)</h3>
+                    <p class="text-base text-gray-400 mb-4">Seu objetivo primário é não morrer de fome e ter um teto. Abra o <code>/menu</code> e teletransporte-se para o <strong>Mundo Survival</strong>.</p>
+                    <ul class="feature-list text-base text-gray-300">
+                        <li><strong>O Isolamento:</strong> Corra para longe da área de chegada (onde costuma ter muitos jogadores e recursos esgotados). Encontre um terreno plano.</li>
+                        <li><strong>Proteção Inicial (/claim):</strong> Assim que construir sua casa, use a sua Pá Dourada (ferramenta de proteção) para demarcar seu terreno. Isso impede que qualquer outro jogador quebre seus blocos ou abra seus baús.</li>
+                        <li><strong>O Trabalho Duro:</strong> Comece a quebrar árvores, plantar trigo e minerar carvão. Ao fazer isso, você verá notificações de que suas <em>Profissões</em> estão subindo de nível. O trabalho braçal é a fundação de Alynx.</li>
+                        <li><strong>Primeiras Drakmas:</strong> Use <code>/sell all</code> para esvaziar seu inventário de pedras e terras inúteis. O Banco comprará tudo, dando-lhe seu primeiro capital.</li>
+                    </ul>
+                </div>
+
+                <!-- Fase 2 -->
+                <div class="relative">
+                    <div class="timeline-dot top-1"></div>
+                    <h3 class="text-2xl text-white font-bold font-rpg mb-3">Fase 2: O Despertar da Alma (Nível 10 a 30)</h3>
+                    <p class="text-base text-gray-400 mb-4">Você já tem fornalhas funcionando e uma armadura de ferro completa. Chegou a hora de parar de ser apenas um lenhador e se tornar um combatente.</p>
+                    <ul class="feature-list text-base text-gray-300">
+                        <li><strong>O Chamado:</strong> Digite <code>/classes</code>. Você sentirá afinidade com a magia pesada de um Arcanista? Ou prefere a brutalidade física de um Bárbaro? Escolha com sabedoria.</li>
+                        <li><strong>A Caçada:</strong> Saia à noite no Mundo Survival para caçar Zumbis, Aranhas e Esqueletos baunilha. Ao abatê-los, sua Classe principal começará a ganhar experiência e a subir de Nível Base.</li>
+                        <li><strong>Forjando o Corpo:</strong> A cada nível, digite <code>/atributos</code> e fortaleça o que importa (Força para guerreiros, Inteligência para magos). Um personagem mal distribuído é um personagem morto.</li>
+                        <li><strong>A Primeira Magia:</strong> Acesse <code>/skills</code> e gaste seu primeiro ponto mágico. Aprenda a conjurá-la lendo as instruções.</li>
+                    </ul>
+                </div>
+
+                <!-- Fase 3 -->
+                <div class="relative">
+                    <div class="timeline-dot top-1"></div>
+                    <h3 class="text-2xl text-alynx-gold font-bold font-rpg mb-3 text-glow">Fase 3: O Batismo de Fogo (Mundo de Aventura)</h3>
+                    <p class="text-base text-gray-400 mb-4">O Minecraft clássico ficou fácil. Você está orgulhoso da sua armadura de Diamante. Então, você viaja para o <strong>Mundo de Aventura</strong> (<code>/ag</code>) e é obliterado por um Esqueleto Nível 35 que atira bolas de fogo. O verdadeiro jogo começou.</p>
+                    <ul class="feature-list text-base text-gray-300">
+                        <li><strong>Armamento Obsoleto:</strong> Entenda que armas normais não machucam Monstros de Elite. Você precisa encontrar os <strong>Ferreiros de Elite</strong> nas vilas deste mundo.</li>
+                        <li><strong>O Ciclo do Scrap:</strong> Mate Elites fracos de Nível 1 a 5. Eles droparão equipamentos peculiares. Como você não vai usá-los, desmanche-os (Scrap) no Ferreiro para receber "Moedas de Elite".</li>
+                        <li><strong>A Forja do Poder:</strong> Use essas Moedas de Elite para comprar sua primeira Lâmina ou Cajado de Tier 1 na loja do Ferreiro. Essas armas contêm encantamentos absolutos, roubo de vida e dano em área. É a única forma de progredir.</li>
+                    </ul>
+                </div>
+
+                <!-- Fase 4 -->
+                <div class="relative">
+                    <div class="timeline-dot top-1" style="background-color: #7D3C98; box-shadow: 0 0 15px #7D3C98;"></div>
+                    <h3 class="text-2xl text-alynx-purple font-bold font-rpg mb-3 text-glow-purple">Fase 4: A Coroa, as Lendas e o Sangue (End Game)</h3>
+                    <p class="text-base text-gray-400 mb-4">Sua "Build" está completa. Seus atributos, magias e equipamentos de Elite estão em perfeita sinergia. Você é uma máquina de guerra. O que falta?</p>
+                    <ul class="feature-list text-base text-gray-300">
+                        <li><strong>O Trono:</strong> Reúna sua riqueza e funde uma Nação. Digite <code>/k create</code>, estabeleça o seu Nexus, construa muralhas colossais, instale torres defensivas mágicas e cobre impostos de reinos inferiores.</li>
+                        <li><strong>O Abismo:</strong> Forme uma "Party" (Grupo) com curandeiros, magos de área e guerreiros linha de frente. Entrem nos Portais instanciados das <strong>Dungeons (Masmorras)</strong> para enfrentar Chefões Titânicos com mecânicas insanas.</li>
+                        <li><strong>O Açougue:</strong> Vá para as zonas abertas de Survival caçar outros jogadores experientes. Entre para o infame rank de Assassinos, suba seu Nível PK e faça com que o servidor inteiro trema ao ler o seu nome no chat.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção 3: Personagem & Magia -->
+        <section id="personagem" class="mb-32 pt-8">
+            <h2 class="text-4xl text-alynx-gold font-bold mb-6 font-rpg border-b border-gray-800 pb-4"><i class="fas fa-user-shield mr-4"></i> 3. O Livro das Almas: Personagem e Magia</h2>
+            <p class="mb-8 text-lg text-gray-300">
+                Alynx não usa o sistema baunilha raso de "juntar XP verde para encantar picaretas". A sua essência de combate é governada por um motor de RPG massivo, dividindo você em Classes, Atributos escalonáveis e Árvores de Magia imersivas.
+            </p>
+
+            <!-- Sub 1: Classes e Nivel -->
+            <h3 class="text-2xl text-alynx-gold font-rpg font-bold sub-heading">A Vocação e o Nível Base</h3>
+            <p class="mb-4 text-base text-gray-300 leading-relaxed">
+                Tudo se origina do comando <code>/classes</code>. Você deve determinar qual papel exercerá num grupo. 
+                Ao abater inimigos, você ganha Experiência Clássica. A cada vez que o seu <strong>Nível Base</strong> é elevado, três coisas cruciais acontecem: o seu teto de HP (Vida Máxima) é aumentado, você recebe <strong>Pontos de Atributo</strong>, e ganha um <strong>Ponto de Skill</strong> para aprofundar seu conhecimento arcano.
+            </p>
+            <div class="glass-panel p-5 rounded-lg mb-8 grid grid-cols-1 md:grid-cols-3 gap-4 border-l-4 border-l-blue-500">
+                <div class="text-center p-3 border border-gray-800 rounded bg-[#05070A]">
+                    <i class="fas fa-khanda text-3xl text-gray-400 mb-2"></i>
+                    <h4 class="font-bold text-white mb-1">Linha de Frente</h4>
+                    <p class="text-xs text-gray-400">Guerreiros, Paladinos, Bárbaros. Alta regeneração e maestria com espadas e escudos pesados.</p>
+                </div>
+                <div class="text-center p-3 border border-gray-800 rounded bg-[#05070A]">
+                    <i class="fas fa-wand-sparkles text-3xl text-purple-400 mb-2"></i>
+                    <h4 class="font-bold text-white mb-1">Conjuradores</h4>
+                    <p class="text-xs text-gray-400">Magos, Arcanistas e Clérigos. Frágeis fisicamente, mas devastadores em dano de área e suporte.</p>
+                </div>
+                <div class="text-center p-3 border border-gray-800 rounded bg-[#05070A]">
+                    <i class="fas fa-bow-arrow text-3xl text-green-400 mb-2"></i>
+                    <h4 class="font-bold text-white mb-1">Flanqueadores</h4>
+                    <p class="text-xs text-gray-400">Arqueiros e Assassinos. Dano explosivo crítico e mobilidade extrema para abates rápidos.</p>
+                </div>
+            </div>
+
+            <!-- Sub 2: Atributos -->
+            <h3 class="text-2xl text-alynx-gold font-rpg font-bold sub-heading">A Forja do Corpo (Atributos Primários)</h3>
+            <p class="mb-6 text-base text-gray-300">
+                Acesse o menu <code>/atributos</code>. Um erro aqui pode inutilizar todo o seu esforço. Você não pode ser bom em tudo. A sinergia e a especialização definem um herói de Elite. Distribua seus pontos para focar na sua estatística de dano primária:
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 text-base">
+                <div class="bg-alynx-darker border-l-4 border-red-600 p-6 rounded-xl shadow-lg hover:-translate-y-1 transition-transform">
+                    <strong class="text-red-500 text-lg flex items-center mb-2"><i class="fas fa-dumbbell mr-2"></i> Força (STR)</strong>
+                    <p class="text-gray-400 text-sm">O atributo bruto. Eleva exponencialmente o dano direto causado por armas de curta distância (Espadas, Machados, Lanças). Além disso, aumenta sua capacidade natural de carregar itens sem perder fôlego. O coração de qualquer Guerreiro.</p>
+                </div>
+                <div class="bg-alynx-darker border-l-4 border-green-500 p-6 rounded-xl shadow-lg hover:-translate-y-1 transition-transform">
+                    <strong class="text-green-500 text-lg flex items-center mb-2"><i class="fas fa-crosshairs mr-2"></i> Destreza (DEX)</strong>
+                    <p class="text-gray-400 text-sm">A precisão. Multiplica o dano de projéteis (Arco e Flecha, Bestas) e é o único atributo que escala drasticamente a sua <em>Chance de Acerto Crítico</em> (causar o dobro do dano num único golpe). O refúgio dos Caçadores.</p>
+                </div>
+                <div class="bg-alynx-darker border-l-4 border-blue-500 p-6 rounded-xl shadow-lg hover:-translate-y-1 transition-transform">
+                    <strong class="text-blue-500 text-lg flex items-center mb-2"><i class="fas fa-book-journal-whills mr-2"></i> Inteligência (INT)</strong>
+                    <p class="text-gray-400 text-sm">A mente superior. Cada ponto expande seu limite de <em>Mana</em> (sua energia azul para soltar habilidades) e acelera a regeneração passiva dessa energia. Além de alavancar brutalmente o dano de qualquer feitiço mágico.</p>
+                </div>
+                <div class="bg-alynx-darker border-l-4 border-orange-500 p-6 rounded-xl shadow-lg hover:-translate-y-1 transition-transform">
+                    <strong class="text-orange-500 text-lg flex items-center mb-2"><i class="fas fa-heart-pulse mr-2"></i> Vitalidade (VIT)</strong>
+                    <p class="text-gray-400 text-sm">A sobrevivência absoluta. Concede Corações Extras de Vida Máxima e amplifica a cura natural quando você está fora de combate. <em>Regra de Alynx:</em> Não importa sua classe, nunca ignore a Vitalidade, ou você será dizimado por um único ataque de um Chefe.</p>
+                </div>
+            </div>
+
+            <!-- Sub 3: Skill Tree -->
+            <h3 class="text-2xl text-alynx-gold font-rpg font-bold sub-heading">A Constelação: Árvore de Habilidades (Skill Tree)</h3>
+            <p class="mb-4 text-base text-gray-300">
+                Diferente de sistemas simplórios em que você apenas clica num menu para comprar um poder, Alynx possui uma <strong>Skill Tree</strong> (Árvore de Habilidades) incrivelmente imersiva. Digite <code>/skills</code> e encante-se.
+            </p>
+            <p class="mb-6 text-base text-gray-300">
+                No painel central, as magias estão conectadas por teias místicas ("nós" / nodes). Você começa no centro e deve traçar um caminho. Para alcançar as habilidades "Ultimates" (as mais devastadoras, localizadas nas extremidades da árvore), você precisará gastar preciosos pontos de skill ativando nós passivos menores pelo caminho (Ex: "+2% Dano Ígneo", "Redução de 0.5s de Cooldown", "Regeneração de Stamina"). Esse formato complexo garante que a sua "Build" seja inteiramente única.
+            </p>
+
+            <!-- Sub 4: Conjuração -->
+            <div class="glass-panel p-8 rounded-2xl border border-alynx-purple relative mt-10 overflow-hidden">
+                <div class="absolute -right-10 -top-10 opacity-10"><i class="fas fa-wand-magic-sparkles text-9xl"></i></div>
+                <h3 class="text-2xl text-white font-rpg font-bold mb-4 relative z-10 text-glow-purple">O Domínio da Conjuração (Como lançar Magias)</h3>
+                <p class="text-base text-gray-300 mb-6 relative z-10">
+                    Sua magia está aprendida e equipada num "Slot" dentro do menu. Mas como a mágica flui no calor do combate contra um dragão? Em Alynx, não usamos comandos de chat (tipo <code>/cast fireball</code>). O combate é dinâmico, físico e possui mecânicas sob medida dependendo da plataforma que você joga:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                    <div class="bg-[#05070A] p-6 rounded-xl border-t-4 border-blue-500 shadow-lg">
+                        <strong class="text-white text-lg flex items-center mb-3"><i class="fas fa-desktop text-blue-400 mr-2 text-2xl"></i> Jogadores de PC (Java Edition)</strong>
+                        <p class="text-sm text-gray-400 leading-relaxed mb-3">O fluxo é ativado pela genial tecla de permuta. Com a sua espada/varinha na mão, pressione a tecla <strong>F</strong> (que normalmente troca o item de mão). Magia pura acontece!</p>
+                        <p class="text-sm text-gray-400 leading-relaxed">
+                            Sua barra de inventário rápida (Hotbar) desaparecerá instantaneamente, dando lugar a uma <strong>Barra de Feitiços invisível</strong>, cheia de ícones mágicos. Basta pressionar os botões numéricos do teclado (<strong>1, 2, 3...</strong>) correspondentes à magia desejada, e o poder sairá na ponta da arma. Feito isso, pressione <strong>F</strong> novamente para que suas espadas e poções voltem para a barra, retomando o combate corporal contínuo.
+                        </p>
+                    </div>
+                    <div class="bg-[#05070A] p-6 rounded-xl border-t-4 border-green-500 shadow-lg">
+                        <strong class="text-white text-lg flex items-center mb-3"><i class="fas fa-gamepad text-green-400 mr-2 text-2xl"></i> Jogadores Mobile / Consoles (Bedrock)</strong>
+                        <p class="text-sm text-gray-400 leading-relaxed mb-3">Como telas de celular não possuem atalhos rápidos ou a tecla 'F', o Alynx foi programado com uma adaptação revolucionária. Vocês conjuram magias através de <strong>Combos de Movimento e Ação</strong> fluídos.</p>
+                        <p class="text-sm text-gray-400 leading-relaxed">
+                            Basta segurar sua arma e executar a "dança" descrita na janela de informações da magia. 
+                            <br><span class="text-alynx-gold">Exemplo:</span> Agachar (Sneak) + Bater (Botão esquerdo/tela) = Dispara Raio Congelante.
+                            <br><span class="text-alynx-gold">Exemplo 2:</span> Agachar + Botão de Interagir/Colocar Bloco = Levanta uma Parede de Pedra. O combate vira um hack and slash ágil!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção 4: Profissões -->
+        <section id="profissoes" class="mb-32 pt-8">
+            <h2 class="text-4xl text-alynx-gold font-bold mb-6 font-rpg border-b border-gray-800 pb-4"><i class="fas fa-hammer mr-4"></i> 4. A Engrenagem do Mundo: Sistema de Profissões</h2>
+            <p class="mb-6 text-lg text-gray-300">
+                A sua Classe determina como você mata, mas as suas <strong>Profissões</strong> ditam como você vive. O servidor opera num ecossistema orgânico altamente inspirado na franquia <em>The Elder Scrolls (Skyrim)</em>. Não há NPCs distribuindo "cargos" limitados. Se você quiser ser bom numa coisa, basta executá-la.
+            </p>
+            
+            <p class="mb-6 text-base text-gray-300 bg-alynx-panel p-5 rounded-lg border border-gray-800">
+                A mágica visual acontece quando você quebra um bloco de pedra, colhe uma cenoura, corre, ou cai de um barranco. Uma grossa <strong>Barra Amarela de Experiência</strong> dominará temporariamente a sua tela. É o seu nível daquela profissão subindo independentemente do seu nível de combate. Ao evoluir, digite <code>/profissoes</code> e invista <em>Pontos de Talento</em> na imensa teia de benefícios daquela habilidade.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 text-base mt-10">
+                <div class="bg-[#05070A] p-6 rounded-xl border border-gray-800 shadow-md">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-gem text-blue-400 text-3xl w-10"></i>
+                        <h4 class="font-bold text-white text-xl">Mineração & Forja (Smithing)</h4>
+                    </div>
+                    <p class="text-sm text-gray-400 mb-3">A espinha dorsal da economia. Mestres mineradores podem gastar talentos para quebrar a pedra e o minério já vir em barra, derretido, economizando tempo e carvão. Eles também ganham a passiva de achar pedras raras ao quebrar pedregulhos comuns.</p>
+                    <p class="text-sm text-gray-400">Na bigorna, a <em>Forja</em> permite que mestres restaurem armaduras gastando menos recursos e criem armamentos com limites de durabilidade 5x maiores.</p>
+                </div>
+                
+                <div class="bg-[#05070A] p-6 rounded-xl border border-gray-800 shadow-md">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-seedling text-green-400 text-3xl w-10"></i>
+                        <h4 class="font-bold text-white text-xl">Agricultura & Alquimia</h4>
+                    </div>
+                    <p class="text-sm text-gray-400 mb-3">Bilionários de Alynx começam aqui. Fazendeiros experientes ativam a "Colheita Rápida": com um clique direito numa safra pronta, ela é colhida, vai pro baú e é replantada no mesmo milissegundo, permitindo colher hectares em segundos.</p>
+                    <p class="text-sm text-gray-400">Alquimistas nível máximo transmutam ervas normais em poções tóxicas que, quando arremessadas em jogadores inimigos (PvP), criam poças venenosas imensas.</p>
+                </div>
+                
+                <div class="bg-[#05070A] p-6 rounded-xl border border-gray-800 shadow-md">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-person-falling text-red-400 text-3xl w-10"></i>
+                        <h4 class="font-bold text-white text-xl">Acrobacia (Mobilidade)</h4>
+                    </div>
+                    <p class="text-sm text-gray-400 mb-3">Toda vez que você sofre dano de queda, você "estuda" o impacto. Com Acrobacia alta, você adquire reflexos felinos.</p>
+                    <p class="text-sm text-gray-400"><strong>Rolamento Tático:</strong> Ao despencar de uma grande altura, aperte o botão de Agachar (Shift) frações de segundo antes de colidir com o chão. O seu personagem fará uma cambalhota mágica, zerando todo o dano letal.</p>
+                </div>
+                
+                <div class="bg-[#05070A] p-6 rounded-xl border border-gray-800 shadow-md">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-shield-halved text-gray-400 text-3xl w-10"></i>
+                        <h4 class="font-bold text-white text-xl">Defesa Física e Armaduras</h4>
+                    </div>
+                    <p class="text-sm text-gray-400 mb-3">Mesmo tomando pancadas, você evolui. Existe uma profissão inteira dedicada a apanhar.</p>
+                    <p class="text-sm text-gray-400">Usar <em>Armaduras Leves</em> (Couro/Cota) treina sua Evasão, concedendo a chance de ataques inteiros passarem de raspão (Miss). Usar <em>Armaduras Pesadas</em> (Ferro/Diamante) treina sua mitigação celular, permitindo que as placas absolvam danos de explosões e flechas como se fossem esponjas de aço.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção 5: Territórios e Reinos -->
+        <section id="territorios" class="mb-32 pt-8">
+            <h2 class="text-4xl text-alynx-gold font-bold mb-6 font-rpg border-b border-gray-800 pb-4"><i class="fas fa-chess-rook mr-4"></i> 5. O Mapa Político: Territórios, Clans e Nações</h2>
+            <p class="mb-8 text-lg text-gray-300">
+                Todo bloco no Alynx possui valor bélico. A gestão de terras garante que a sua economia continue girando e seus tesouros fiquem a salvo de invasores gananciosos. A nossa arquitetura territorial é moldada tanto para o lobo solitário, quanto para o imperador sanguinário.
+            </p>
+
+            <h3 class="text-2xl text-alynx-gold font-rpg font-bold sub-heading">Sobrevivência, Co-op Simples e o /claim</h3>
+            <p class="mb-5 text-base text-gray-300">
+                Se você acabou de entrar no servidor e só quer construir uma cabana humilde para você e dois amigos sem grandes preocupações diplomáticas, não mexa com Reinos complexos. Adote a solução civil:
+            </p>
+            <div class="bg-alynx-panel p-6 rounded-xl border border-gray-800 mb-8">
+                <ul class="list-none space-y-5 text-sm text-gray-300">
+                    <li class="flex items-start">
+                        <i class="fas fa-trowel text-alynx-gold text-xl mt-1 mr-4 w-6 text-center"></i>
+                        <div>
+                            <strong class="text-white text-base">Proteção de Blocos Básica (/claim)</strong><br>
+                            Basta usar a ferramenta designada (como uma Pá Dourada, adquirida nas lojas ou via comando). Clique em dois pontos opostos do terreno para "desenhar" um quadrado delimitador. Tudo dentro dessa cerca invisível é propriedade privada inviolável. Seus baús, animais e blocos ficam blindados contra ladrões comuns.
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-users text-blue-400 text-xl mt-1 mr-4 w-6 text-center"></i>
+                        <div>
+                            <strong class="text-white text-base">O Grupo Fechado (/clan)</strong><br>
+                            Muitos amigos acidentalmente soltam magias de área e matam uns aos outros (Fogo Amigo). Resolva isso fundando um Clan Simples (<code>/clan create [Nome]</code>). O Clan oferece uma tag cosmética elegante acima das cabeças, canal de chat exclusivo e anula instantaneamente o dano trocado entre vocês, perfeito para Dungeons.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <h3 class="text-2xl text-alynx-gold font-rpg font-bold sub-heading">A Coroa Pesada: O Sistema de Reinos</h3>
+            <p class="mb-5 text-base text-gray-300">
+                Quando o seu grupo de 3 amigos vira um exército de 15 pessoas riquíssimas, as cercas de madeira já não bastam. Você precisa de diplomacia real, torres que disparam fogo e demarcações estatais. Chegou a hora de fundar um Reino. Digite <code>/k create [Nome do Império]</code>. 
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="glass-panel p-6 rounded-xl border-l-4 border-alynx-purple">
+                    <h4 class="text-xl text-white font-bold mb-3 font-rpg">O Coração Vital: O Nexus</h4>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        Ao erguer um Reino, sua primeira ordem será posicionar um bloco físico especial chamado <strong>Nexus</strong>. Ele deve ficar extremamente protegido no núcleo do castelo principal. Se inimigos conseguirem derrubar suas defesas e minerar/explodir seu Nexus, toda a proteção das terras cede e o seu império desmorona.
+                    </p>
+                </div>
+                <div class="glass-panel p-6 rounded-xl border-l-4 border-alynx-gold">
+                    <h4 class="text-xl text-white font-bold mb-3 font-rpg">Pontos de Recurso (RP)</h4>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        Reinos custam caro. Seus membros precisam interagir com o Nexus e "sacrificar" minérios e pedras preciosas da economia para dentro dele. O Nexus absorve e cospe <strong>Pontos de Recurso (RP)</strong>. É com esse RP gigantesco que o seu Rei compra novos pedaços de terra (Chunks) em nome do estado (usando <code>/k claim</code>).
+                    </p>
+                </div>
+            </div>
+            
+            <div class="bg-[#050000] p-6 rounded-xl border border-alynx-crimson mb-6">
+                <h4 class="text-xl text-red-500 font-bold mb-3 font-rpg"><i class="fas fa-fire-flame-curved mr-2"></i> Torres Balísticas e Vassalagem</h4>
+                <p class="text-sm text-gray-400 leading-relaxed mb-3">
+                    A maior diferença de um Reino é que ele se defende ativamente. Usando o RP acumulado, você acessa o painel do Nexus e compra <strong>Torres (Turrets)</strong>. Uma vez posicionadas no alto dos seus muros, elas se ativam autonomamente. Se um jogador de um reino inimigo pisar na sua terra para invadir, mesmo com você offline na vida real, a Torre detecta a presença e despeja chuva de flechas, magia incendiária e poções neles.
+                </p>
+                <p class="text-sm text-gray-400 leading-relaxed">
+                    Quando o seu Reino abraçar grande parte do mapa, você o promoverá a uma <strong>Nação Soberana</strong>. Como governante maior, você pode submeter Reinos fracos da vizinhança a serem seus "Vassalos". O painel descontará taxas (impostos) diárias das contas deles diretamente para as ricas arcas da sua Nação em troca do fim da guerra. É a dominação absoluta.
+                </p>
+            </div>
+
+            <div class="p-4 bg-blue-900/20 border border-blue-800 rounded-lg flex items-center justify-center text-sm text-blue-200">
+                <i class="fas fa-radar mr-3 text-2xl"></i>
+                <p><strong>A Tática do Visor:</strong> Nos campos abertos, você não consegue ver as linhas do chão. Digite constantemente <code>/k map</code> no chat. Um complexo radar de caracteres surgirá, onde cada "quadradinho" simboliza as fronteiras de Reinos pacíficos (Verde) e Reinos Hostis (Vermelho) cercando a sua base!</p>
+            </div>
+        </section>
+
+        <!-- Seção 6: Mundo de Aventura -->
+        <section id="mundo-aventura" class="mb-32 pt-8">
+            <h2 class="text-4xl text-alynx-gold font-bold mb-8 font-rpg border-b border-gray-800 pb-4"><i class="fas fa-dragon mr-4"></i> 6. O Fosso do Perigo: O Mundo de Aventura (/ag)</h2>
+            <p class="mb-8 text-lg text-gray-300">
+                Você conquistou o Mundo Survival. Suas vacas estão em paz, sua armadura baunilha parece dura como rocha e você se sente um Deus. O Alynx então o convida a digitar <code>/ag</code> (Aventura Global). Prepare-se para ser destruído se vier despreparado. O abismo chama por você.
+            </p>
+
+            <div class="glass-panel p-10 rounded-2xl border-2 border-red-900/50 mb-10 relative overflow-hidden shadow-[0_0_40px_rgba(144,12,63,0.1)]">
+                <div class="absolute -right-8 -top-8 opacity-5"><i class="fas fa-skull text-[12rem]"></i></div>
+                <h3 class="text-3xl text-white font-rpg font-bold mb-6 relative z-10 text-glow-red">Monstros de Elite e o Choque de Realidade</h3>
+                <p class="mb-5 text-base text-gray-300 relative z-10">
+                    Nas trevas do Mundo de Aventura, os monstros comuns do Minecraft foram abolidos. Enxames de "Monstros de Elite" andam livremente por estas planícies sombrias. Eles possuem um "Nível" enorme flutuando em suas cabeças, que indica o seu grau de letalidade. Um Mago Esqueleto Nível 35 possui dezenas de vezes mais HP que um normal.
+                </p>
+                <p class="mb-5 text-base text-gray-300 relative z-10 font-bold text-red-400">
+                    O Problema Crucial: A sua armadura Netherite perfeita do Minecraft normal NÃO absorve o dano inflacionado deles, e a sua Espada de Diamante afiada causará quase zero impacto na carapaça dessas feras de nível alto.
+                </p>
+                <div class="bg-[#050000] p-6 rounded-xl border border-red-950 relative z-10 mt-6">
+                    <h4 class="text-xl text-alynx-gold font-bold font-rpg mb-4">A Resolução: O Mercado dos Ferreiros Locais</h4>
+                    <p class="text-sm text-gray-400 mb-3">Para sobreviver, você precisa descartar a economia do mundo antigo e adotar as <strong>Moedas de Elite</strong>.</p>
+                    <ol class="list-decimal list-inside space-y-4 text-sm text-gray-400 font-medium">
+                        <li class="pl-2">Utilize suas magias de classe e vença um Elite de nível rasteiro (Nível 1 a 5). Com sorte, a morte dele derrubará no chão um Peitoral Mágico genérico ou Botas cintilantes.</li>
+                        <li class="pl-2">Como esses drops iniciais não se encaixam no seu personagem, corra até a Guilda dos <strong>Ferreiros</strong> espalhada nas Vilas Centrais do mapa de Aventura. Venda essas peças no "Triturador de Sucata" (Scrap) deles. Esse processo te pagará Moedas de Elite abundantes.</li>
+                        <li class="pl-2 text-alynx-gold">Abra o imenso catálogo comercial do Ferreiro e use essas moedas para comprar Itens baseados no "Tier" de dificuldade. Essas Peças Oficiais são absurdamente sobre-humanas (concedendo Chance de Esquiva, multiplicadores Críticos, Dano de Sangramento). É armando-se nos Ferreiros que você finalmente conseguirá entrar nos portões finais: as Masmorras.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <h3 class="text-2xl text-alynx-gold font-rpg font-bold sub-heading">Dungeons (Masmorras Instanciadas) e World Bosses</h3>
+            <p class="mb-6 text-base text-gray-300 leading-relaxed">
+                As florestas abrigam segredos nefastos. Cavernas adornadas e Templos caídos funcionam como portais isolados. Forme um pequeno exército com seu clã e entre. Você será teleportado para uma Instância Isolada de Masmorra, enfrentando hordas num percurso fechado e armadilhado que culminará no centro câmara.
+            </p>
+            <p class="mb-6 text-base text-gray-300 leading-relaxed">
+                Lá dentro aguarda o <strong>Chefão Titânico (World Boss)</strong>. Esqueça o combate banal de apertar o botão rápido. Os chefes possuem ciclos mecânicos de sobrevivência idênticos a MMORPGs de ponta: eles ganham Escudos de Fogo onde curam suas barras de vida até que seu grupo elimine os lacaios específicos; puxam jogadores desprevenidos para abismos; disparam barragens geométricas de dano de área mortal que exigirão a proteção frenética do seu Curandeiro (Clérigo). As recompensas de Masmorra abastecem os reis bilionários de Alynx.
+            </p>
+        </section>
+
+        <!-- Seção 7: Economia -->
+        <section id="economia" class="mb-32 pt-8">
+            <h2 class="text-4xl text-alynx-gold font-bold mb-8 font-rpg border-b border-gray-800 pb-4"><i class="fas fa-coins mr-4 text-yellow-500"></i> 7. O Peso do Ouro: Economia e a Glória das Drakmas</h2>
+            <p class="mb-8 text-lg text-gray-300">
+                Guerreiros ganham as batalhas, mas é a economia que vence as guerras. Em Alynx, o capital não é apenas um dígito no canto inferior da tela (tipo "Você tem $5.000,00"). O tesouro é algo quase físico, dotado de tradição, brilho e lore profunda, representado de forma unificada pelas lendárias <strong>Drakmas</strong>.
+            </p>
+
+            <h3 class="text-2xl text-alynx-gold font-rpg font-bold sub-heading">A Natureza Ouro das Drakmas</h3>
+            <p class="mb-6 text-base text-gray-300">
+                Cunhada magicamente para não sofrer inflação, a <strong>Drakma</strong> flui por todos os rincões do mapa. O seu balanço virtual financeiro é subdividido em representações lúdicas que simbolizam o status da sua riqueza no mundo real. Quando o sistema avisa quanto você tem, ele usa este sistema de peso:
+            </p>
+            
+            <div class="flex flex-col lg:flex-row gap-6 mb-10 text-center text-sm px-4">
+                <div class="flex-1 bg-gradient-to-b from-[#151C2C] to-[#0A0D14] p-6 rounded-2xl border border-yellow-800/50 shadow-md">
+                    <i class="fas fa-coins text-yellow-600 text-5xl mb-4 drop-shadow-md"></i>
+                    <h4 class="font-bold text-white text-lg font-rpg mb-2">Moedas de Drakma</h4>
+                    <p class="text-gray-400">A poeira básica do aventureiro novato. Você usa Moedas soltas para viagens de barco rápidas ou comprar batatas nos NPCs civis.</p>
+                </div>
+                <div class="flex-1 bg-gradient-to-b from-[#1A1A1A] to-[#0D0D0D] p-6 rounded-2xl border border-yellow-600/60 shadow-lg scale-105 z-10">
+                    <i class="fas fa-bars text-yellow-500 text-6xl mb-4 drop-shadow-lg text-glow"></i>
+                    <h4 class="font-bold text-white text-lg font-rpg mb-2">Barras de Drakma</h4>
+                    <p class="text-gray-400">Prensadas pelo Banco Central, representam as centenas e milhares inteiros do seu patrimônio. A moeda oficial do comerciante imobiliário.</p>
+                </div>
+                <div class="flex-1 bg-gradient-to-b from-[#2A2000] to-[#110D00] p-6 rounded-2xl border border-yellow-400/80 shadow-[0_0_25px_rgba(212,175,55,0.2)]">
+                    <i class="fas fa-sack-dollar text-alynx-gold text-5xl mb-4 drop-shadow-xl text-glow"></i>
+                    <h4 class="font-bold text-white text-lg font-rpg mb-2">Bolsas de Drakmas</h4>
+                    <p class="text-gray-400">O auge financeiro. Cada Bolsa compacta centenas de Barras em densidade mística milionária. Tesouro movimentado por Nações gigantes na compra de itens de nível supremo (End-game).</p>
+                </div>
+            </div>
+
+            <h3 class="text-2xl text-alynx-gold font-rpg font-bold sub-heading">Fluxo do Mercado: Como gerar sua Fortuna?</h3>
+            <div class="space-y-8 text-base text-gray-300">
+                <div class="glass-panel p-6 rounded-xl flex flex-col md:flex-row items-center md:items-start gap-6">
+                    <div class="bg-[#05070A] p-5 rounded-full border border-yellow-700/50 shrink-0">
+                        <i class="fas fa-building-columns text-alynx-gold text-4xl"></i>
+                    </div>
+                    <div>
+                        <strong class="text-white text-xl font-rpg block mb-2">1. A Escoagem no Banco Central (/sell all)</strong>
+                        <p class="text-sm text-gray-400 leading-relaxed">
+                            O Banco Central, que possui sua sede palaciana no Spawn, é a fonte primária de dinheiro injetado novo no ecossistema. Você passou o final de semana exercendo sua profissão de Agricultor e guardou 80 baús entupidos de cenouras monstruosas?
+                            A magia bancária do <code>/sell all</code> absorverá instantaneamente o seu inventário banal e o converterá em Moedas de Drakma fluidas com preço tabelado da inflação oficial. Perfeito para limpeza de minérios indesejados.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-6 rounded-xl flex flex-col md:flex-row items-center md:items-start gap-6">
+                    <div class="bg-[#05070A] p-5 rounded-full border border-yellow-500/50 shrink-0">
+                        <i class="fas fa-gavel text-yellow-500 text-4xl"></i>
+                    </div>
+                    <div>
+                        <strong class="text-white text-xl font-rpg block mb-2">2. Casa de Leilões Global (/ah)</strong>
+                        <p class="text-sm text-gray-400 leading-relaxed">
+                            O Banco não entende nada de Magia. Ele não comprará a "Espada Rúnica Demoníaca Nível 50" que você roubou de um Chefe. Para itens estelares, use a Casa de Leilões comandada por jogadores. Com a arma equipada, digite <code>/ah sell [Seu Preço Extorsivo]</code>. A arma subirá num catálogo visual lindíssimo que todo o servidor abre pelo comando <code>/ah</code>. Um paladino de outra cidade verá sua Lâmina, pagará e o ouro voará para a sua conta, mesmo que você esteja dormindo offline!
+                        </p>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-6 rounded-xl flex flex-col md:flex-row items-center md:items-start gap-6">
+                    <div class="bg-[#05070A] p-5 rounded-full border border-blue-500/50 shrink-0">
+                        <i class="fas fa-handshake-simple text-blue-500 text-4xl"></i>
+                    </div>
+                    <div>
+                        <strong class="text-white text-xl font-rpg block mb-2">3. Comércio Cara-a-Cara (O Trade Seguro)</strong>
+                        <p class="text-sm text-gray-400 leading-relaxed">
+                            "Joga a arma aí no chão que eu jogo as minhas Barras de Drakma". Esse é o choro dos ingênuos que perdem fortunas em roubos rápidos nas florestas. O Sistema do servidor proíbe quedas soltas de valores grandiosos. Face a face com o mercador? Digite <code>/trade [Nome do Alvo]</code>. Uma interface de balcão se ergue virtualmente; de um lado vai a grana preta, do outro vai o Escudo Abissal. A troca só ocorre, à prova de falhas mágicas, se ambos os botões ficarem verdes juntos.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção 8: PVP e PK -->
+        <section id="pvp" class="mb-32 pt-8">
+            <h2 class="text-4xl text-alynx-crimson font-bold mb-8 font-rpg border-b border-gray-800 pb-4 text-glow-red"><i class="fas fa-skull-crossbones mr-4"></i> 8. A Fúria e a Caça: PvP Aberto e Assassinos (PK)</h2>
+            <p class="mb-6 text-lg text-gray-300">
+                Por debaixo das belas florestas e vilas arquitetônicas de Alynx, corre a impetuosa tensão do sangue derramado. Não se iluda com o Spawn gentil. <strong>O Combate entre jogadores reais (PvP) é letal e ABERTO no mapa gigantesco.</strong>
+            </p>
+            <p class="mb-8 text-base text-gray-300">
+                Seu único refúgio absoluto são as delimitações seguras dos Reinos e de seus Claims. No momento em que a sola da sua bota toca a poeira selvagem (Wilderness), as suas costas viram alvo. Contudo, há uma mecânica kármica severa projetada para assombrar os predadores.
+            </p>
+
+            <h3 class="text-2xl text-red-500 font-rpg font-bold sub-heading">O Preço do Sangue Inocente (Sistema Player Kill - PK)</h3>
+            <p class="mb-6 text-base text-gray-300">
+                Assassinar a esmo ativa as sombras do motor punitivo. O nosso famoso <strong>Sistema de PK</strong> nativo julga as intenções dos pecadores, impondo consequências desastrosas.
+            </p>
+            
+            <div class="bg-gradient-to-br from-[#1a0a0a] to-[#0A0000] p-8 rounded-2xl border-2 border-red-900 shadow-[0_0_50px_rgba(144,12,63,0.25)] mb-10">
+                <ul class="list-none space-y-8 text-base text-gray-300">
+                    <li class="relative pl-12">
+                        <i class="fas fa-caret-up absolute left-0 top-1 text-red-500 text-3xl"></i>
+                        <strong class="text-red-400 text-xl font-rpg block mb-2">Tiers de Carnificina (Níveis de Assassino)</strong> 
+                        <p class="text-sm text-gray-400 leading-relaxed">
+                            A cada viajante cortado por sua lâmina fora de defesas naturais, sua "Aura Sombria" ascende. O chat alertará todos online: <em>"A Fúria de [Seu Nome] acaba de alcançar o Nível 4!"</em>. Uma coroa vermelha flutuará acima de sua nuca no mundo. Mas o ego carrega condenação: Se alguém derrubá-lo enquanto seu Tier PK for altíssimo, as restrições da Morte são anuladas contra você. Perca milhares de XP, sinta seu inventário explodir (drop rate elevado de itens em PKs), e arque com as dívidas de sangue.
+                        </p>
+                    </li>
+                    <li class="relative pl-12">
+                        <i class="fas fa-sack-xmark absolute left-0 top-1 text-yellow-500 text-3xl"></i>
+                        <strong class="text-yellow-500 text-xl font-rpg block mb-2">Bounty (A Cabeça a Prêmio)</strong> 
+                        <p class="text-sm text-gray-400 leading-relaxed">
+                            Bancos não ignoram os distúrbios de mercado provocados por mortes seriais. O próprio Sistema Central cria magicamente uma aposta colossal em Bolsas de Drakmas diretamente atrelada ao seu nome. Caçadores Profissionais de todos os cantos e Nações se unirão na zona selvagem para farejá-lo e reivindicar o seu corpo. O assassino de PKs se banha na riqueza imortal do Governo!
+                        </p>
+                    </li>
+                    <li class="bg-[#0A0505] p-6 rounded-xl border border-red-950 mt-8 relative pl-16">
+                        <i class="fas fa-eye absolute left-4 top-6 text-red-700 text-4xl animate-pulse"></i>
+                        <strong class="text-red-300 text-lg block mb-2 font-rpg">O Olho Que Tudo Vê (A IA de Anti-Farm)</strong> 
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            Muitos trapaceiros de outros servidores combinam: <em>"Ei João, tira as suas armaduras e deixa eu te esfaquear 50 vezes no meio do mato, assim o meu Bounty fica bilionário e o meu Tier sobe, e nós dividimos o lucro do PK"</em>. 
+                            <br><br>
+                            Em Alynx, os Deuses (nossos algoritmos avançados anti-cheat) detectam essas fraudes pelas "Auras de Interação". Eles gravam seu IP, analisam a velocidade da caminhada, o cooldown de troca de armaduras de quem apanha, os golpes e o padrão das sessões repetidas. Consequência do Anti-Farm? O servidor emudece. A contagem não sobe, a Drakma não nasce e a comunidade inteira passa a rir de dois guerreiros fingindo batalhas de mentira num canto sujo de mato. Honra. Somente a batalha sangrenta genuína concede os louros e bônus da escalada PK!
+                        </p>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="p-6 bg-alynx-panel border border-gray-700 rounded-xl text-center shadow-lg">
+                <i class="fas fa-building-user text-4xl text-gray-500 mb-4"></i>
+                <h4 class="text-xl text-white font-rpg font-bold mb-2">A Solução Pacífica: O Coliseu Instanciado</h4>
+                <p class="text-sm text-gray-400 leading-relaxed max-w-2xl mx-auto">
+                    Cansou da paranóia persecutória do mundo aberto, mas ainda quer provar que a "Skill Tree" do seu Mago detona aquele Arqueiro orgulhoso? Basta abrir o Menu e registrar seu nome nas batalhas do <strong>Coliseu</strong>. Nas finas areias estelares dessa arena de duelos 1v1 ou 2v2 esportivos, todos os riscos de perdas de experiência e equipamentos são desligados, restando apenas a habilidade pura entre duas lendas!
+                </p>
+            </div>
+        </section>
+
+        <!-- Conclusão -->
+        <div class="glass-panel p-12 rounded-3xl mt-20 text-center border-2 border-alynx-gold shadow-[0_0_60px_rgba(212,175,55,0.25)] relative overflow-hidden">
+            <div class="absolute -left-10 -top-10 opacity-20"><i class="fas fa-dragon text-9xl text-alynx-gold"></i></div>
+            <div class="absolute -right-10 -bottom-10 opacity-20"><i class="fas fa-dragon text-9xl text-alynx-gold transform scale-x-[-1]"></i></div>
+            
+            <i class="fas fa-crown text-7xl text-alynx-gold mb-6 text-glow relative z-10"></i>
+            <h2 class="text-5xl text-white font-rpg font-bold mb-6 relative z-10">O Seu Nome Ecoará Pelas Eras?</h2>
+            <p class="text-gray-300 text-xl max-w-3xl mx-auto leading-relaxed relative z-10">
+                Acabou-se a penugem e os passos tímidos. As páginas do Tomo Final se encerram aqui. O manual mental foi absorvido. Agora abra seu inventário, conjure seus feitiços cósmicos, esmague seus inimigos para faturar Drakmas massivas, monte a maior Nação de nosso continente e prepare-se, pois o trono de Alynx aguarda uma nova lenda. <strong>Boa sorte!</strong>
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-28 border-t border-gray-900 pt-12 pb-16 text-center">
+            <h1 class="font-rpg text-3xl text-alynx-gold mb-3 text-glow">Alynx - World of Minecraft</h1>
+            <p class="text-sm text-gray-500 uppercase tracking-widest font-bold mb-6">A Enciclopédia Oficial do Universo Arcânico</p>
+            <div class="flex justify-center space-x-6 mb-8 text-gray-600">
+                <i class="fab fa-discord text-2xl hover:text-alynx-purple cursor-pointer transition-colors"></i>
+                <i class="fas fa-globe text-2xl hover:text-blue-500 cursor-pointer transition-colors"></i>
+                <i class="fab fa-instagram text-2xl hover:text-pink-500 cursor-pointer transition-colors"></i>
+            </div>
+            <p class="text-xs text-gray-600 opacity-50">Toda a glória, sangue e drakmas aqui narrados são registrados sob a lei imortal do Império Central.</p>
+        </footer>
+
+    </main>
+
+    <!-- Scripts de Interação -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const mobileBtn = document.getElementById('mobile-menu-btn');
+            const sidebar = document.getElementById('sidebar');
+
+            // Toggle Mobile Menu
+            mobileBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('hidden');
+                sidebar.classList.toggle('absolute');
+                sidebar.classList.toggle('bg-alynx-darker');
+                sidebar.classList.toggle('z-50');
+            });
+
+            // Close mobile menu on link click
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth < 768) {
+                        sidebar.classList.add('hidden');
+                        sidebar.classList.remove('absolute');
+                    }
+                });
+            });
+
+            // ScrollSpy Magic - Highlights side menu on scroll
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= (sectionTop - 300)) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
